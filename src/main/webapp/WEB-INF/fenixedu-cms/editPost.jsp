@@ -35,7 +35,6 @@ ${portal.angularToolkit()}
 <script src="${pageContext.request.contextPath}/static/js/fancytree-directive.js" type="text/javascript"></script>
 <script src="${pageContext.request.contextPath}/static/js/ng-file-upload-shim.js" type="text/javascript" charset="utf-8"></script>
 <script src="${pageContext.request.contextPath}/static/js/ng-file-upload.js" type="text/javascript" charset="utf-8"></script>
-
 <div class="page-header">
     <h1>${post.name.content}
         <small>
@@ -47,8 +46,14 @@ ${portal.angularToolkit()}
         </small>
     </h1>
 </div>
-<div ng-app="editPostApp" ng-controller="PostCtrl">
 
+<div ng-app="editPostApp" ng-controller="PostCtrl">
+        <div class="alert alert-success" role="alert" ng-if="successMessage">
+            <spring:message code="post.edit.success.update"/>
+        </div>
+        <div class="alert alert-danger" role="alert" ng-if="errorMessage">
+            <spring:message code="post.edit.error.update"/>
+        </div>
 
 		<div class="row">
 			<div class="col-sm-12">
@@ -368,7 +373,7 @@ ${portal.angularToolkit()}
 	        $httpProvider.defaults.headers.common = $httpProvider.defaults.headers.common || {};
 	        $httpProvider.defaults.headers.common['${csrf.headerName}'] = '${csrf.token}';
 	    }])
-        .controller('PostCtrl', ['$scope', '$http','Upload', function($scope, $http, Upload){
+        .controller('PostCtrl', ['$scope', '$http', '$timeout', 'Upload', function($scope, $http, $timeout, Upload){
             $http.get("data").success(function(data){
 	                $scope.post = data.post;
 	                $scope.errors = undefined;
@@ -382,8 +387,16 @@ ${portal.angularToolkit()}
 
 	                $scope.update = function() {
 	                	$http.post(updatePostUrl, $scope.post).success(function(response) {
-	                		$scope.post = response.post;
+	                	    $scope.successMessage = true;
+	                	    $timeout(function() {
+	                	        $scope.successMessage = false;
+	                	    }, 2000);
+	                	    $scope.post = response.post;
 	                	}).error(function(response) {
+	                	    $scope.errorMessage = true;
+	                	    $timeout(function() {
+	                	        $scope.errorMessage = false;
+	                	    }, 2000);
 	                		$scope.errors = response;
 	                	});
 	                };
